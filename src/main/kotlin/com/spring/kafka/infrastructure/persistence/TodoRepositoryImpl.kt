@@ -1,11 +1,13 @@
 package com.spring.kafka.infrastructure.persistence
 
-import com.spring.kafka.application.dto.TodoSearchDto
+import com.spring.kafka.domain.common.PageResult
 import com.spring.kafka.domain.entity.Todo
 import com.spring.kafka.domain.repository.TodoRepository
+import com.spring.kafka.domain.repository.TodoSearchCriteria
 import com.spring.kafka.infrastructure.persistence.TodoSpecification.hasTitle
+import com.spring.kafka.infrastructure.persistence.mapper.TodoMapper
 import com.spring.kafka.infrastructure.persistence.repository.SpringDataTodoRepository
-import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Repository
 import java.util.UUID
@@ -16,35 +18,28 @@ class TodoRepositoryImpl(
 ) : TodoRepository {
 
     override fun save(todo: Todo): Todo {
-        val entity = toEntity(todo)
+        val entity = TodoMapper.toEntity(todo)
         val saved = jpaRepository.save(entity)
-        return toDomain(saved)
+        return TodoMapper.toDomain(saved)
     }
 
     override fun findById(id: UUID): Todo? {
         return jpaRepository.findById(id)
-            .map { toDomain(it) }
+            .map { TodoMapper.toDomain(it) }
             .orElse(null)
     }
 
-    override fun search(searchDto: TodoSearchDto): Page<Todo> {
-        val spec = Specification
-            .where(hasTitle(searchDto.title))
+    override fun search(criteria: TodoSearchCriteria): PageResult<Todo> {
+        val spec = Specification.where(hasTitle(criteria.title))
+        val pageable = PageRequest.of(criteria.page, criteria.size)
+        val page = jpaRepository.findAll(spec, pageable)
 
-        return jpaRepository.findAll(spec, searchDto.pageable)
+        return PageResult(
+            content = page.content.map { TodoMapper.toDomain(it) },
+            page = page.number,
+            size = page.size,
+            totalElements = page.totalElements,
+            totalPages = page.totalPages
+        )
     }
-
-    private fun toEntity(todo: Todo) =
-        Todo(
-            id = todo.id,
-            title = todo.title,
-            completed = todo.completed
-        )
-
-    private fun toDomain(entity: Todo) =
-        Todo(
-            id = entity.id,
-            title = entity.title,
-            completed = entity.completed
-        )
 }

@@ -3,7 +3,17 @@ spring:
     jdbc:
       initialize-schema: always
   datasource:
-    url: jdbc:postgresql://localhost:5435/todo_manager
+    url: jdbc:postgresql://localhost:5432/todo_manager
     username: postgres
-    password: admin
+    password:
     driver-class-name: org.postgresql.Driver
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: todo-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

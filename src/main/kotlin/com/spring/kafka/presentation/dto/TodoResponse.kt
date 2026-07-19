@@ -1,9 +1,7 @@
-package com.spring.kafka.application.dto
+package com.spring.kafka.presentation.dto
 
 import com.spring.kafka.domain.entity.Todo
-import java.time.LocalDateTime
 import java.util.UUID
-
 
 data class TodoResponse(
     val id: UUID?,

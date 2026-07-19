@@ -1,4 +1,4 @@
-package com.spring.kafka.application.dto
+package com.spring.kafka.presentation.dto
 
 data class CreateTodoRequest(
     val title: String
